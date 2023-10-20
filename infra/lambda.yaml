@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ''
+Resources:
+  Lambda: 
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: reservr-lambda
+      Code: 
+        ImageUri: !Sub
+          - '${URI}:latest'
+          - URI: !ImportValue LambdaUri
+      PackageType: Image
+      Role: !ImportValue ExecutorArn
+      Environment:
+        Variables:
+          # replace the following with appropriate secrets. 
+          # this template assumes the Lambda is accessing an RDS.
+          RDS_DB: !ImportValue RDSInstanceRef
+          RDS_PASSWORD: '{{resolve:secretsmanager:ReservrDBSecret}}'
+      Timeout: 90
+      Tags:
+        - Key: Name
+          Value: reservr-lambda
+Parameters: {}
+Metadata: {}
+Conditions: {}
