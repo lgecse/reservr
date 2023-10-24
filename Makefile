@@ -1,4 +1,6 @@
 BINARY_NAME=reservr
+REPO=481155165509.dkr.ecr.eu-west-1.amazonaws.com
+IMG=reservr-lambda
 
 .PHONY: build
 build:
@@ -27,3 +29,15 @@ vet:
 
 lint:
 	golangci-lint run --enable-all
+
+debug-run:
+	docker run --platform linux/amd64 -d -v ~/.aws-lambda-rie:/aws-lambda -p 8080:8080 --entrypoint /aws-lambda/aws-lambda-rie kristofgyuracz/reservr:0.0.1 ./reservr-server
+
+docker-build:
+	docker build --platform linux/amd64 -t ${REPO}/${IMG} .
+
+docker-push:
+	docker push ${REPO}/${IMG}
+
+docker-login:
+	aws ecr get-login-password --region=eu-west-1 | docker login --username AWS --password-stdin ${REPO}

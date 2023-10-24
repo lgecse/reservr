@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ''
+Resources:
+  ReservrDBSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: ReservrDBSecret
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\
+  ReservrRdsInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: db.t3.micro
+      MultiAZ: false
+      Engine: postgres
+      EngineVersion: '15.3'
+      MasterUsername: dbadmin
+      MasterUserPassword:
+        'Fn::Sub': '{{resolve:secretsmanager:${ReservrDBSecret}}}'
+      Port: '5432'
+      DBInstanceIdentifier: rds-postgres
+      AllocatedStorage: '50'
+      StorageEncrypted: false
+      StorageType: standard
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+  LambdaECR:
+    Type: AWS::ECR::Repository
+    Description: ECR to hold image of Lambda function
+    Properties:
+      ImageScanningConfiguration: 
+        ScanOnPush: true
+      RepositoryName: !Sub "reservr-lambda"
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ECRLambdaPolicy
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "ecr:BatchGetImage"
+              - "ecr:GetDownloadUrlForLayer"
+      Tags:
+        - Key: Name
+          Value: reservr-lambda-ecr
+  LambdaExecutorRole:
+    Type: AWS::IAM::Role
+    Description: Role to allow Lambda to basic access to VPC
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: 
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      RoleName: !Sub reservr-lambda-executor
+Parameters: {}
+Metadata: {}
+Conditions: {}
+Outputs:
+  LambdaECR:
+    Description: The ECR URL for the image repository from which the image for the lambda will be used.
+    Value: !GetAtt LambdaECR.RepositoryUri
+    Export:
+      Name: LambdaUri
+  ReservrRdsInstance:
+    Description: The The ARN of the secret containing the DB password.
+    Value: !Ref ReservrRdsInstance
+    Export:
+      Name: RDSInstanceRef
+  ReservrDBSecret:
+    Description: The The ARN of the secret containing the DB password.
+    Value: !GetAtt ReservrDBSecret.Id
+    Export:
+      Name: RDSSecretId
+  LambdaExecutorRole:
+    Description: The The ARN of the Lambda executor role.
+    Value: !GetAtt LambdaExecutorRole.Arn
+    Export:
+      Name: ExecutorArn
