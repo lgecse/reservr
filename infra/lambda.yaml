@@ -1,10 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: ''
 Resources:
-  Lambda: 
+  ReservrApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: Example API Gateway
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Name: reservr-api
+
+  ReservrApiGatewayRootMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !GetAtt ReservrLambda.Arn
+      ResourceId: !GetAtt ReservrApiGateway.RootResourceId
+      RestApiId: !Ref ReservrApiGateway
+
+  ReservrApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ReservrApiGatewayRootMethod
+    Properties:
+      RestApiId: !Ref ReservrApiGateway
+      StageName: prod
+
+  ReservrLambda: 
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: reservr-lambda
+      FunctionName: reservr-lambda-function
       Code: 
         ImageUri: !Sub
           - '${URI}:latest'
@@ -13,14 +44,58 @@ Resources:
       Role: !ImportValue ExecutorArn
       Environment:
         Variables:
-          # replace the following with appropriate secrets. 
-          # this template assumes the Lambda is accessing an RDS.
           RDS_DB: !ImportValue RDSInstanceRef
           RDS_PASSWORD: '{{resolve:secretsmanager:ReservrDBSecret}}'
+          WEBEX_TEAMS_ACCESS_TOKEN: MDUzNjAyMDAtZGE2YS00MzVmLWI0M2ItMjU1Y2VlMTJhZjEwNjNlMjlhY2ItYzM2_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f
       Timeout: 90
       Tags:
         - Key: Name
           Value: reservr-lambda
+  
+  ReservrLambdaApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ReservrLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ReservrApiGateway}/prod/ANY/
+
+  ReservrLambdaIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/ReservrLambda:*
+          PolicyName: lambda
+
+  ReservrLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/ReservrLambda
+      RetentionInDays: 90
 Parameters: {}
 Metadata: {}
 Conditions: {}
+Outputs:
+  apiGatewayInvokeURL:
+    Value: !Sub https://${ReservrApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod
+
+  lambdaArn:
+    Value: !GetAtt ReservrLambda.Arn
