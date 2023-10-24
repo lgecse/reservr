@@ -12,13 +12,9 @@ type Chatbot struct {
 	client *webexteams.Client
 }
 
-var instance *Chatbot
-
 func GetChatbot() *Chatbot {
-	if instance == nil {
-		instance.client = webexteams.NewClient()
-	}
-
+	instance := new(Chatbot)
+	instance.client = webexteams.NewClient()
 	return instance
 }
 
@@ -38,15 +34,16 @@ func (c *Chatbot) HandleMessage(event *webexteams.Event) error {
 	case "echo":
 		responseText = c.getEchoMessage(event)
 
+	default:
+		responseText = c.getHelpMessage()
 	}
-
 	err = c.sendMessageToPerson(responseText, message.PersonID)
 
 	return err
 }
 
 func (c *Chatbot) getHelpMessage() string {
-	return "TODO: Help message"
+	return "TODO#1: Help message"
 }
 
 func (c *Chatbot) getEchoMessage(event *webexteams.Event) string {
