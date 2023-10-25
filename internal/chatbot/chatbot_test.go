@@ -36,6 +36,11 @@ var messageCreateRequest2 = webexteams.MessageCreateRequest{
 	Text:       "Echoing your message back: echo cho ho",
 }
 
+var messageCreateRequest3 = webexteams.MessageCreateRequest{
+	ToPersonID: "9999@pers.on",
+	Text:       "Echoing your message back: ECHO cho ho o",
+}
+
 var message1 = webexteams.Message{}
 
 func TestHandleMessage(t *testing.T) {
@@ -82,6 +87,17 @@ func TestHandleMessage(t *testing.T) {
 			"9999@pers.on",
 			nil,
 		},
+		{
+			"should return with echo if command is ECHO",
+			webexEvent1,
+			&webexteams.Message{
+				Text:     "ECHO cho ho o",
+				PersonID: "9999@pers.on",
+			},
+			"Echoing your message back: ECHO cho ho o",
+			"9999@pers.on",
+			nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,6 +109,7 @@ func TestHandleMessage(t *testing.T) {
 			messagesClient.On("GetMessage", tt.event.Data.ID).Return(tt.sentMessage, &resty.Response{}, nil)
 			messagesClient.On("CreateMessage", &messageCreateRequest1).Return(&message1, &resty.Response{RawResponse: &http.Response{StatusCode: 200}}, nil)
 			messagesClient.On("CreateMessage", &messageCreateRequest2).Return(&message1, &resty.Response{RawResponse: &http.Response{StatusCode: 200}}, nil)
+			messagesClient.On("CreateMessage", &messageCreateRequest3).Return(&message1, &resty.Response{RawResponse: &http.Response{StatusCode: 200}}, nil)
 
 			message, err := bot.HandleMessage(tt.event)
 

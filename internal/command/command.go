@@ -3,8 +3,6 @@ package command
 import (
 	"strings"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // Declaring time layout constant
@@ -51,22 +49,16 @@ type CommandCall struct {
 
 func Parse(message string) CommandCall {
 	returnValue := CommandCall{}
-
-	words := strings.Split(message, " ")
-	log.Infof("words: %v", words)
+	words := strings.Split(strings.ToLower(message), " ")
 	if len(words) > 0 {
 		returnValue.Command = command(words[0])
-
 		if len(words) > 1 {
 			returnValue.Resource = resource(words[1])
-
 			if len(words) > 2 {
 				returnValue.Date, _ = time.Parse(timelayout, words[2])
 			}
 		}
 	}
-
-	log.Infof("%v", returnValue)
 	return returnValue
 }
 

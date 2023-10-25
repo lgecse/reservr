@@ -60,9 +60,6 @@ func (c *Chatbot) getMessageFromAPI(event *webexteams.Event) (webexteams.Message
 }
 
 func (c *Chatbot) getCommand(messageText string) command.CommandCall {
-
-	log.Infof(messageText)
-
 	commandCall := command.Parse(messageText)
 
 	if !commandCall.IsValid() {
