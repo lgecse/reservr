@@ -4,3 +4,5 @@ go.work
 build/
 
 .vscode
+.notes
+.DS_Store
