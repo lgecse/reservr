@@ -8,7 +8,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	webexteams "github.com/jbogarin/go-cisco-webex-teams/sdk"
 	"github.com/joho/godotenv"
-	"github.com/kristofgyuracz/reservr/chatbot"
+	"github.com/kristofgyuracz/reservr/internal/chatbot"
+	"github.com/kristofgyuracz/reservr/internal/webex"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fastjson"
 )
@@ -39,8 +40,8 @@ func HandleRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 		}
 
 		if webexEvent.Event == "created" && webexEvent.Resource == "messages" {
-			chatbot := chatbot.GetChatbot()
-			err := chatbot.HandleMessage(&webexEvent)
+			chatbot := chatbot.NewChatbot(webex.New(webexteams.NewClient()))
+			_, err := chatbot.HandleMessage(&webexEvent)
 
 			if err != nil {
 				body := "Error: Failed to produce response message ||| " + fmt.Sprint(err) + " Body Obtained" + "||||" + request.Body
