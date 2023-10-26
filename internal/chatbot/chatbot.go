@@ -44,7 +44,28 @@ func (c *Chatbot) HandleMessage(event *webexteams.Event) (string, error) {
 }
 
 func (c *Chatbot) getHelpMessage() string {
-	return "TODO#1: Help message"
+	return `Usage: 
+
+Commands: 
+	help  		Shows this help
+	echo		Replies with your message
+	reserve 	Make a reservation
+	cancel		Cancel a reservation
+	get			Get reservation information
+
+Examples:
+	help
+	echo foo bar
+	reserve P164 
+	reserve P164 2023-10-25
+	reserve P164 tomorrow
+	cancel T058 2023-10-26
+	get
+	get 2023-10-27
+
+Resource examples:
+	P164		Parking lot ID 164
+	T058		Table ID 058`
 }
 
 func (c *Chatbot) getEchoMessage(event *webexteams.Event) string {
