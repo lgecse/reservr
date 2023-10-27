@@ -47,25 +47,25 @@ func (c *Chatbot) getHelpMessage() string {
 	return `Usage: 
 
 Commands: 
-	help  		Shows this help
-	echo		Replies with your message
-	reserve 	Make a reservation
-	cancel		Cancel a reservation
-	get			Get reservation information
+    help		Shows this help
+    echo		Replies with your message
+    reserve		Make a reservation
+    cancel		Cancel a reservation
+    get			Get reservation information
 
 Examples:
-	help						Prints the help message
-	echo foo bar				Replies with echo foo bar
-	reserve P164				Reserves P164 parking lot for today
-	reserve P164 2023-10-25		Reserves P164 parking lot for 2023-10-25
-	reserve P164 tomorrow		Reserves P164 parking lot for tomorrow
-	cancel T058 2023-10-26		Cancels reservation of T058 table for 2023-10-26
-	get							Returns with your future reservations
-	get 2023-10-27				Returns with your reservations for 2023-10-27
+    help						Prints the help message
+    echo foo bar				Replies with echo foo bar
+    reserve P164				Reserves P164 parking lot for today
+    reserve P164 2023-10-25		Reserves P164 parking lot for 2023-10-25
+    reserve P164 tomorrow		Reserves P164 parking lot for tomorrow
+    cancel T058 2023-10-26		Cancels reservation of T058 table for 2023-10-26
+    get							Returns with your future reservations
+    get 2023-10-27				Returns with your reservations for 2023-10-27
 
 Resource examples:
-	P164		Parking lot ID 164
-	T058		Table ID 058`
+    P164		Parking lot ID 164
+    T058		Table ID 058`
 }
 
 func (c *Chatbot) getEchoMessage(event *webexteams.Event) string {
