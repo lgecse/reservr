@@ -38,7 +38,7 @@ Resources:
       FunctionName: reservr-lambda-function
       Code: 
         ImageUri: !Sub
-          - '${URI}:latest'
+          - '${URI}:0.0.3'
           - URI: !ImportValue LambdaUri
       PackageType: Image
       Role: !ImportValue ExecutorArn
