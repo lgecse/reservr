@@ -1,6 +1,7 @@
 package chatbot_test
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -26,19 +27,44 @@ var webexEvent1 = &webexteams.Event{ //nolint:exhaustivestruct
 	},
 }
 
+const ExpectedEchoMessageFormat = "Echoing your message back: %s"
+
+const ExpectedHelpMessage = `Usage: 
+
+Commands: 
+    help        Shows this help
+    echo        Replies with your message
+    reserve     Make a reservation
+    cancel      Cancel a reservation
+    get         Get reservation information
+
+Examples:
+    help                        Prints the help message
+    echo foo bar                Replies with echo foo bar
+    reserve P164                Reserves P164 parking lot for today
+    reserve P164 2023-10-25     Reserves P164 parking lot for 2023-10-25
+    reserve P164 tomorrow       Reserves P164 parking lot for tomorrow
+    cancel T058 2023-10-26      Cancels reservation of T058 table for 2023-10-26
+    get                         Returns with your future reservations
+    get 2023-10-27              Returns with your reservations for 2023-10-27
+
+Resource examples:
+    P164        Parking lot ID 164
+    T058        Table ID 058`
+
 var messageCreateRequest1 = webexteams.MessageCreateRequest{
 	ToPersonID: "9999@pers.on",
-	Text:       "TODO#1: Help message",
+	Text:       ExpectedHelpMessage,
 }
 
 var messageCreateRequest2 = webexteams.MessageCreateRequest{
 	ToPersonID: "9999@pers.on",
-	Text:       "Echoing your message back: echo cho ho",
+	Text:       fmt.Sprintf(ExpectedEchoMessageFormat, "echo cho ho"),
 }
 
 var messageCreateRequest3 = webexteams.MessageCreateRequest{
 	ToPersonID: "9999@pers.on",
-	Text:       "Echoing your message back: ECHO cho ho o",
+	Text:       fmt.Sprintf(ExpectedEchoMessageFormat, "ECHO cho ho o"),
 }
 
 var message1 = webexteams.Message{}
@@ -61,7 +87,7 @@ func TestHandleMessage(t *testing.T) {
 				Text:     "help",
 				PersonID: "9999@pers.on",
 			},
-			"TODO#1: Help message",
+			ExpectedHelpMessage,
 			"9999@pers.on",
 			nil,
 		},
@@ -83,7 +109,7 @@ func TestHandleMessage(t *testing.T) {
 				Text:     "invalidcommand",
 				PersonID: "9999@pers.on",
 			},
-			"TODO#1: Help message",
+			ExpectedHelpMessage,
 			"9999@pers.on",
 			nil,
 		},
