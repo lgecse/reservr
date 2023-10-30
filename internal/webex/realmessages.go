@@ -20,10 +20,16 @@ func New(client *webexteams.Client) MessagesClient {
 
 func (m *realMessagesClient) GetMessage(id string) (*webexteams.Message, *resty.Response, error) {
 	message, response, err := m.client.Messages.GetMessage(id)
-	return message, response, fmt.Errorf("failed to get message: %w", err)
+	if err != nil {
+		return message, response, fmt.Errorf("failed to get message: %w", err)
+	}
+	return message, response, nil
 }
 
 func (m *realMessagesClient) CreateMessage(messageCreateRequest *webexteams.MessageCreateRequest) (*webexteams.Message, *resty.Response, error) {
 	message, response, err := m.client.Messages.CreateMessage(messageCreateRequest)
-	return message, response, fmt.Errorf("failed to create message: %w", err)
+	if err != nil {
+		return message, response, fmt.Errorf("failed to create message: %w", err)
+	}
+	return message, response, nil
 }
