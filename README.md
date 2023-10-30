@@ -18,7 +18,7 @@ aws cloudformation update-stack \                                               
 ### Build and push docker image
 Image version should be bumped on deploy. Application lambda needs to be redeployed with a new image tag, otherwise it won't update.
 ```
-make IMG=reservr-lambda:0.0.4  docker-build docker-push
+make IMG=reservr-lambda:0.0.5  docker-build docker-push
 ```
 
 ### Deploy application layer
